@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>眼动数据采集实验：物理图像题学习任务</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --border: #dbe1ea;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      background: linear-gradient(135deg, #eef4ff 0%, #f8fafc 55%, #eff6ff 100%);
+      color: var(--text);
+    }
+
+    header {
+      padding: 22px 32px;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 20px 40px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .side {
+      padding: 20px;
+      align-self: start;
+      position: sticky;
+      top: 96px;
+    }
+
+    .main {
+      min-height: 720px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .section {
+      display: none;
+      padding: 28px;
+      min-height: 720px;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 26px;
+    }
+
+    h3 {
+      margin: 20px 0 10px;
+      font-size: 18px;
+    }
+
+    p, li {
+      line-height: 1.75;
+      font-size: 16px;
+    }
+
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .meta {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      transition: transform .08s ease, background .12s ease;
+    }
+
+    button:hover { background: var(--primary-dark); }
+    button:active { transform: scale(0.98); }
+    button.secondary { background: #e5e7eb; color: #111827; }
+    button.secondary:hover { background: #d1d5db; }
+    button.success { background: var(--success); }
+    button.warning { background: var(--warning); color: #111827; }
+    button.danger { background: var(--danger); }
+    button:disabled {
+      opacity: 0.52;
+      cursor: not-allowed;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .progress {
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 12px 0 20px;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2563eb, #7c3aed);
+      transition: width .25s ease;
+    }
+
+    .status {
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin: 14px 0;
+    }
+
+    .status strong { color: #111827; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      margin: 4px 4px 4px 0;
+    }
+
+    .warning-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: #78350f;
+      margin: 16px 0;
+    }
+
+    .success-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: #14532d;
+      margin: 16px 0;
+    }
+
+    .task-screen {
+      position: relative;
+      min-height: 620px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: white;
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    .aoi {
+      position: relative;
+      border: 2px solid transparent;
+      border-radius: 14px;
+      padding: 14px;
+      transition: border-color .1s ease, background .1s ease;
+    }
+
+    .show-aoi .aoi {
+      border-color: rgba(37, 99, 235, 0.6);
+      background: rgba(37, 99, 235, 0.03);
+    }
+
+    .aoi-label {
+      display: none;
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      background: var(--primary);
+      color: white;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .show-aoi .aoi-label { display: inline-block; }
+
+    .learning-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .formula-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .graph-wrap {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    canvas#physicsGraph {
+      width: 100%;
+      max-width: 430px;
+      height: 300px;
+      background: #fff;
+    }
+
+    .question-card {
+      margin-top: 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fbfdff;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .option:hover {
+      border-color: var(--primary);
+      background: #f8fbff;
+    }
+
+    .option input {
+      width: auto;
+      margin-top: 4px;
+    }
+
+    .timer {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #111827;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .calibration-area {
+      position: relative;
+      height: 560px;
+      border: 1px dashed #cbd5e1;
+      background: #f8fafc;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .calib-point {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #2563eb;
+      border: 6px solid rgba(37,99,235,.25);
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 0 0 8px rgba(37,99,235,.08);
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 5px rgba(37,99,235,.10); }
+      50% { box-shadow: 0 0 0 14px rgba(37,99,235,.18); }
+      100% { box-shadow: 0 0 0 5px rgba(37,99,235,.10); }
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .metric {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fbfdff;
+    }
+
+    .metric .num {
+      font-size: 28px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 14px;
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 8px;
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      font-weight: 800;
+    }
+
+    .overlay-canvas {
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+
+    .gaze-dot {
+      width: 14px;
+      height: 14px;
+      background: rgba(220, 38, 38, 0.92);
+      border: 2px solid white;
+      border-radius: 50%;
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 4px 14px rgba(220, 38, 38, .35);
+      display: none;
+    }
+
+    .note-list {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 920px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: static; }
+      .learning-grid { grid-template-columns: 1fr; }
+      .section { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>眼动数据采集实验：物理图像题学习任务</h1>
+    <p>用于《人工智能教育应用》课堂演示：眼动数据采集、兴趣区分析、学习过程诊断与数据导出</p>
+  </header>
+
+  <div id="gazeDot" class="gaze-dot"></div>
+
+  <div class="container">
+    <div class="layout">
+      <aside class="card side">
+        <h3>实验控制台</h3>
+        <div class="progress"><div class="bar" id="progressBar"></div></div>
+
+        <div class="status">
+          <div><strong>当前阶段：</strong><span id="stageName">实验说明</span></div>
+          <div><strong>数据模式：</strong><span id="modeName">未启动</span></div>
+          <div><strong>样本数量：</strong><span id="sampleCount">0</span></div>
+          <div><strong>任务计时：</strong><span id="taskTime">00:00</span></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="secondary" onclick="goSection('intro')">说明</button>
+          <button class="secondary" onclick="goSection('design')">实验设计</button>
+          <button class="secondary" onclick="goSection('calibration')">校准</button>
+          <button class="secondary" onclick="goSection('task')">学习任务</button>
+          <button class="secondary" onclick="goSection('result')">结果</button>
+        </div>
+
+        <h3>采集模式</h3>
+        <div class="btn-row">
+          <button onclick="startMouseMode()">鼠标模拟眼动</button>
+          <button onclick="startWebGazerMode()">摄像头眼动估计</button>
+          <button class="danger" onclick="stopTracking()">停止采集</button>
+        </div>
+        <p class="small">
+          课堂演示建议先使用“鼠标模拟眼动”。摄像头模式依赖浏览器权限和WebGazer.js，建议在HTTPS或localhost环境中运行。
+        </p>
+
+        <h3>显示设置</h3>
+        <div class="btn-row">
+          <button class="secondary" onclick="toggleAOI()">显示/隐藏兴趣区</button>
+          <button class="secondary" onclick="toggleGazeDot()">显示/隐藏注视点</button>
+        </div>
+
+        <h3>数据导出</h3>
+        <div class="btn-row">
+          <button class="success" onclick="downloadCSV()">导出CSV</button>
+          <button class="success" onclick="downloadJSON()">导出JSON</button>
+          <button class="warning" onclick="resetExperiment()">清空数据</button>
+        </div>
+      </aside>
+
+      <main class="card main">
+        <section id="intro" class="section active">
+          <h2>一、实验说明</h2>
+          <p>
+            本实验用于演示如何在教育场景中采集和分析眼动数据。实验任务为一道
+            <strong>高中物理图像题</strong>。学生需要阅读题干、观察图像、参考公式，并完成选择题。
+          </p>
+
+          <div class="warning-box">
+            <strong>伦理提示：</strong>
+            如果在真实研究中采集学生眼动或摄像头数据，应提前获得知情同意，明确数据用途、存储方式、匿名化处理方式和退出机制。本网页主要用于课堂演示和方法教学。
+          </div>
+
+          <h3>实验目标</h3>
+          <ul>
+            <li>理解眼动数据在学习任务中的采集流程。</li>
+            <li>学习如何划分兴趣区：题干区、图像区、公式区、选项区。</li>
+            <li>通过注视位置和停留时间分析学生是否关注关键信息。</li>
+            <li>体验从“答题结果”走向“学习过程诊断”的基本思路。</li>
+          </ul>
+
+          <h3>被试信息</h3>
+          <div class="meta">
+            <div>
+              <label for="participantId">被试编号</label>
+              <input id="participantId" placeholder="例如：S001" value="S001"/>
+            </div>
+            <div>
+              <label for="grade">年级/班级</label>
+              <input id="grade" placeholder="例如：高二1班 / 本科生" />
+            </div>
+            <div>
+              <label for="modeSelect">课堂使用场景</label>
+              <select id="modeSelect">
+                <option>课堂演示</option>
+                <option>小组实验</option>
+                <option>正式研究预实验</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button onclick="goSection('design')">进入实验设计</button>
+            <button class="secondary" onclick="goSection('calibration')">跳到校准</button>
+          </div>
+        </section>
+
+        <section id="design" class="section">
+          <h2>二、眼动采集实验设计</h2>
+
+          <h3>1. 研究问题</h3>
+          <div class="note-list">
+            <p><strong>问题1：</strong>学生在解决图像题时，是否关注了图像区域？</p>
+            <p><strong>问题2：</strong>学生是否会在“题干—图像—公式—选项”之间进行有效切换？</p>
+            <p><strong>问题3：</strong>答错学生的问题是“没有看到关键信息”，还是“看到了但没有理解”？</p>
+          </div>
+
+          <h3>2. 实验变量</h3>
+          <table>
+            <tr><th>类型</th><th>内容</th></tr>
+            <tr><td>学习任务</td><td>完成一道包含文字、图像、公式和选项的物理图像题</td></tr>
+            <tr><td>兴趣区 AOI</td><td>题干区、图像区、公式区、选项区、反馈区</td></tr>
+            <tr><td>眼动指标</td><td>注视位置、停留时间、首次进入时间、AOI切换次数、总样本数</td></tr>
+            <tr><td>学习结果</td><td>选择答案、是否正确、答题用时、自我解释</td></tr>
+            <tr><td>诊断目标</td><td>识别学生是否忽略图像、是否只看选项、是否长时间停留在题干或公式区域</td></tr>
+          </table>
+
+          <h3>3. 实验流程</h3>
+          <ol>
+            <li>填写被试编号并阅读实验说明。</li>
+            <li>启动眼动采集：可选择鼠标模拟或摄像头估计。</li>
+            <li>完成9点校准，确保视线估计稳定。</li>
+            <li>进入学习任务页面，阅读题目并完成选择。</li>
+            <li>提交答案后，系统展示兴趣区停留时间和简单诊断。</li>
+            <li>导出CSV或JSON数据，用于后续学习分析。</li>
+          </ol>
+
+          <div class="btn-row">
+            <button onclick="goSection('calibration')">进入校准</button>
+            <button class="secondary" onclick="goSection('intro')">返回说明</button>
+          </div>
+        </section>
+
+        <section id="calibration" class="section">
+          <h2>三、9点校准</h2>
+          <p>
+            请依次点击屏幕中的蓝色圆点。每个点建议点击2—3次。校准的作用是让系统建立“眼睛状态”和“屏幕坐标”之间的对应关系。
+          </p>
+
+          <div class="calibration-area" id="calibrationArea">
+            <div id="calibPoint" class="calib-point">1</div>
+          </div>
+
+          <div class="status">
+            <strong>校准进度：</strong><span id="calibStatus">第 1 / 9 个点</span>
+          </div>
+
+          <div class="btn-row">
+            <button onclick="nextCalibrationPoint()">记录当前点</button>
+            <button class="secondary" onclick="restartCalibration()">重新校准</button>
+            <button onclick="goSection('task')">进入学习任务</button>
+          </div>
+        </section>
+
+        <section id="task" class="section">
+          <h2>四、学习任务：物理图像题</h2>
+          <div class="timer">任务计时：<span id="taskTimer">00:00</span></div>
+
+          <div id="taskScreen" class="task-screen">
+            <canvas id="heatCanvas" class="overlay-canvas"></canvas>
+
+            <div class="learning-grid">
+              <div>
+                <div id="aoi_stem" class="aoi" data-aoi="题干区">
+                  <span class="aoi-label">题干区</span>
+                  <h3>题干</h3>
+                  <p>
+                    某物体沿直线运动，其速度—时间图像如右图所示。请根据图像判断：
+                    在 <strong>0—6秒</strong> 内，物体的运动情况和位移大小最接近下列哪一项？
+                  </p>
+                  <p class="small">
+                    提示：速度—时间图像中，图像与时间轴围成的面积表示位移。
+                  </p>
+                </div>
+
+                <div id="aoi_formula" class="aoi formula-box" data-aoi="公式区">
+                  <span class="aoi-label">公式区</span>
+                  <h3>公式提示</h3>
+                  <p>
+                    匀加速阶段位移：s = 平均速度 × 时间<br/>
+                    速度—时间图像面积：s = 图像与时间轴围成的面积<br/>
+                    梯形面积：S = (上底 + 下底) × 高 ÷ 2
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <div id="aoi_graph" class="aoi graph-wrap" data-aoi="图像区">
+                  <span class="aoi-label">图像区</span>
+                  <h3>速度—时间图像</h3>
+                  <canvas id="physicsGraph" width="430" height="300"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div id="aoi_options" class="aoi question-card" data-aoi="选项区">
+              <span class="aoi-label">选项区</span>
+              <h3>请选择答案</h3>
+              <div class="options">
+                <label class="option"><input type="radio" name="answer" value="A"> A. 物体一直匀速运动，位移约为18米</label>
+                <label class="option"><input type="radio" name="answer" value="B"> B. 物体先加速后匀速，位移约为24米</label>
+                <label class="option"><input type="radio" name="answer" value="C"> C. 物体先匀速后减速，位移约为12米</label>
+                <label class="option"><input type="radio" name="answer" value="D"> D. 物体先加速后减速，位移约为36米</label>
+              </div>
+
+              <h3>请简单说明你的判断依据</h3>
+              <textarea id="explain" placeholder="例如：我先观察图像形状，再根据面积计算位移……"></textarea>
+
+              <div class="btn-row">
+                <button onclick="submitAnswer()">提交答案并查看分析</button>
+                <button class="secondary" onclick="markEvent('查看提示')">记录：查看提示</button>
+                <button class="secondary" onclick="markEvent('重新阅读题干')">记录：重新阅读题干</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="result" class="section">
+          <h2>五、采集结果与初步分析</h2>
+
+          <div id="answerFeedback" class="success-box hidden"></div>
+
+          <div class="data-grid">
+            <div class="metric">
+              <div class="small">总样本数</div>
+              <div class="num" id="metricSamples">0</div>
+            </div>
+            <div class="metric">
+              <div class="small">任务总用时</div>
+              <div class="num" id="metricTime">0s</div>
+            </div>
+            <div class="metric">
+              <div class="small">答案</div>
+              <div class="num" id="metricAnswer">-</div>
+            </div>
+            <div class="metric">
+              <div class="small">正确性</div>
+              <div class="num" id="metricCorrect">-</div>
+            </div>
+          </div>
+
+          <h3>兴趣区停留时间统计</h3>
+          <table id="aoiTable">
+            <thead>
+              <tr>
+                <th>兴趣区</th>
+                <th>样本数</th>
+                <th>估计停留时间</th>
+                <th>比例</th>
+                <th>解释提示</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <h3>学习过程诊断</h3>
+          <div id="diagnosis" class="note-list"></div>
+
+          <h3>数据说明</h3>
+          <p class="small">
+            本页面的“鼠标模拟眼动”模式以鼠标位置代替注视点，仅适合课堂演示。摄像头眼动估计的精度受摄像头、光照、头部姿态和浏览器环境影响，不能直接替代科研级眼动仪。
+          </p>
+
+          <div class="btn-row">
+            <button onclick="downloadCSV()">导出CSV</button>
+            <button onclick="downloadJSON()">导出JSON</button>
+            <button class="secondary" onclick="drawHeatmap()">生成热力图</button>
+            <button class="secondary" onclick="goSection('task')">返回任务</button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+  <script>
+    const state = {
+      currentSection: 'intro',
+      tracking: false,
+      mode: '未启动',
+      samples: [],
+      events: [],
+      calibrationIndex: 0,
+      showAOI: false,
+      showGazeDot: false,
+      taskStartedAt: null,
+      taskEndedAt: null,
+      taskTimer: null,
+      lastSampleAt: 0,
+      selectedAnswer: null,
+      correctAnswer: 'B'
+    };
+
+    const sections = ['intro', 'design', 'calibration', 'task', 'result'];
+    const stageNames = {
+      intro: '实验说明',
+      design: '实验设计',
+      calibration: '9点校准',
+      task: '学习任务',
+      result: '结果分析'
+    };
+
+    const calibrationPoints = [
+      [8, 10], [50, 10], [92, 10],
+      [8, 50], [50, 50], [92, 50],
+      [8, 90], [50, 90], [92, 90]
+    ];
+
+    function updatePanel() {
+      document.getElementById('stageName').textContent = stageNames[state.currentSection];
+      document.getElementById('modeName').textContent = state.mode;
+      document.getElementById('sampleCount').textContent = state.samples.length;
+      const idx = sections.indexOf(state.currentSection);
+      document.getElementById('progressBar').style.width = ((idx + 1) / sections.length * 100) + '%';
+      updateTimeDisplays();
+    }
+
+    function goSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      state.currentSection = id;
+      if (id === 'task') startTaskTimer();
+      if (id === 'result') updateResults();
+      resizeHeatCanvas();
+      updatePanel();
+    }
+
+    function startTaskTimer() {
+      if (!state.taskStartedAt) {
+        state.taskStartedAt = Date.now();
+        markEvent('任务开始');
+      }
+      if (state.taskTimer) clearInterval(state.taskTimer);
+      state.taskTimer = setInterval(updateTimeDisplays, 500);
+    }
+
+    function updateTimeDisplays() {
+      let elapsed = 0;
+      if (state.taskStartedAt) {
+        const end = state.taskEndedAt || Date.now();
+        elapsed = Math.floor((end - state.taskStartedAt) / 1000);
+      }
+      const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const s = String(elapsed % 60).padStart(2, '0');
+      document.getElementById('taskTime').textContent = `${m}:${s}`;
+      const timer = document.getElementById('taskTimer');
+      if (timer) timer.textContent = `${m}:${s}`;
+    }
+
+    function recordSample(x, y, source) {
+      if (!state.tracking) return;
+      const now = Date.now();
+      if (now - state.lastSampleAt < 100) return; // 10Hz sampling for classroom demo
+      state.lastSampleAt = now;
+      const aoi = getAOIFromPoint(x, y);
+      const sample = {
+        participantId: document.getElementById('participantId').value || '',
+        grade: document.getElementById('grade').value || '',
+        timestamp: new Date(now).toISOString(),
+        elapsedMs: state.taskStartedAt ? now - state.taskStartedAt : 0,
+        section: state.currentSection,
+        x: Math.round(x),
+        y: Math.round(y),
+        aoi,
+        source
+      };
+      state.samples.push(sample);
+      updateGazeDot(x, y);
+      updatePanel();
+    }
+
+    function getAOIFromPoint(x, y) {
+      const elements = document.querySelectorAll('[data-aoi]');
+      for (const el of elements) {
+        const rect = el.getBoundingClientRect();
+        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+          return el.dataset.aoi;
+        }
+      }
+      return '其他区域';
+    }
+
+    function startMouseMode() {
+      stopWebGazerOnly();
+      state.tracking = true;
+      state.mode = '鼠标模拟眼动';
+      document.addEventListener('mousemove', mouseTracker);
+      markEvent('启动鼠标模拟模式');
+      updatePanel();
+      alert('已启动鼠标模拟眼动。移动鼠标即可记录“模拟注视点”。');
+    }
+
+    function mouseTracker(e) {
+      recordSample(e.clientX, e.clientY, 'mouse-simulation');
+    }
+
+    async function startWebGazerMode() {
+      try {
+        state.tracking = true;
+        state.mode = '摄像头眼动估计';
+        markEvent('启动摄像头眼动估计模式');
+        if (!window.webgazer) {
+          alert('WebGazer.js 未能加载。请检查网络连接，或使用鼠标模拟模式。');
+          return;
+        }
+        await webgazer.setRegression('ridge')
+          .setGazeListener((data, elapsedTime) => {
+            if (data && state.tracking) {
+              recordSample(data.x, data.y, 'webgazer');
+            }
+          })
+          .begin();
+        webgazer.showVideoPreview(false).showPredictionPoints(false);
+        updatePanel();
+        alert('已尝试启动摄像头眼动估计。浏览器可能会请求摄像头权限。建议先完成9点校准。');
+      } catch (err) {
+        console.error(err);
+        alert('摄像头眼动估计启动失败。请改用鼠标模拟模式，或在HTTPS/localhost环境中运行。');
+      }
+    }
+
+    function stopTracking() {
+      state.tracking = false;
+      document.removeEventListener('mousemove', mouseTracker);
+      stopWebGazerOnly();
+      state.mode = '已停止';
+      markEvent('停止采集');
+      updatePanel();
+    }
+
+    function stopWebGazerOnly() {
+      try {
+        if (window.webgazer) {
+          webgazer.pause();
+        }
+      } catch (e) {}
+    }
+
+    function toggleAOI() {
+      state.showAOI = !state.showAOI;
+      document.getElementById('taskScreen').classList.toggle('show-aoi', state.showAOI);
+    }
+
+    function toggleGazeDot() {
+      state.showGazeDot = !state.showGazeDot;
+      document.getElementById('gazeDot').style.display = state.showGazeDot ? 'block' : 'none';
+    }
+
+    function updateGazeDot(x, y) {
+      const dot = document.getElementById('gazeDot');
+      dot.style.left = x + 'px';
+      dot.style.top = y + 'px';
+      dot.style.display = state.showGazeDot ? 'block' : 'none';
+    }
+
+    function positionCalibrationPoint() {
+      const point = document.getElementById('calibPoint');
+      const [x, y] = calibrationPoints[state.calibrationIndex];
+      point.style.left = x + '%';
+      point.style.top = y + '%';
+      point.textContent = state.calibrationIndex + 1;
+      document.getElementById('calibStatus').textContent = `第 ${state.calibrationIndex + 1} / 9 个点`;
+    }
+
+    function nextCalibrationPoint() {
+      markEvent(`校准点${state.calibrationIndex + 1}`);
+      if (state.calibrationIndex < calibrationPoints.length - 1) {
+        state.calibrationIndex++;
+        positionCalibrationPoint();
+      } else {
+        document.getElementById('calibStatus').textContent = '校准完成，可以进入学习任务。';
+        markEvent('校准完成');
+      }
+    }
+
+    function restartCalibration() {
+      state.calibrationIndex = 0;
+      positionCalibrationPoint();
+      markEvent('重新校准');
+    }
+
+    function markEvent(name) {
+      state.events.push({
+        timestamp: new Date().toISOString(),
+        elapsedMs: state.taskStartedAt ? Date.now() - state.taskStartedAt : 0,
+        section: state.currentSection,
+        event: name
+      });
+    }
+
+    function submitAnswer() {
+      const checked = document.querySelector('input[name="answer"]:checked');
+      if (!checked) {
+        alert('请先选择一个答案。');
+        return;
+      }
+      state.selectedAnswer = checked.value;
+      state.taskEndedAt = Date.now();
+      markEvent('提交答案');
+      updateResults();
+      goSection('result');
+    }
+
+    function updateResults() {
+      const samples = state.samples.filter(s => s.section === 'task');
+      const total = samples.length;
+      const elapsedSec = state.taskStartedAt ? Math.floor(((state.taskEndedAt || Date.now()) - state.taskStartedAt) / 1000) : 0;
+      const correct = state.selectedAnswer ? (state.selectedAnswer === state.correctAnswer) : null;
+
+      document.getElementById('metricSamples').textContent = total;
+      document.getElementById('metricTime').textContent = `${elapsedSec}s`;
+      document.getElementById('metricAnswer').textContent = state.selectedAnswer || '-';
+      document.getElementById('metricCorrect').textContent = correct === null ? '-' : (correct ? '正确' : '错误');
+
+      const feedback = document.getElementById('answerFeedback');
+      if (state.selectedAnswer) {
+        feedback.classList.remove('hidden');
+        feedback.innerHTML = correct
+          ? '<strong>答案正确。</strong>本题需要通过速度—时间图像面积估计位移，图像显示先加速后匀速，位移约为24米。'
+          : '<strong>答案不正确。</strong>本题正确答案为B。建议观察速度—时间图像的面积：0—2秒为三角形面积，2—6秒为矩形面积，总位移约为24米。';
+      }
+
+      const aoiStats = computeAOIStats(samples);
+      renderAOITable(aoiStats, total);
+      renderDiagnosis(aoiStats, total, correct);
+      resizeHeatCanvas();
+    }
+
+    function computeAOIStats(samples) {
+      const stats = {};
+      for (const s of samples) {
+        if (!stats[s.aoi]) stats[s.aoi] = { count: 0 };
+        stats[s.aoi].count++;
+      }
+      return stats;
+    }
+
+    function renderAOITable(stats, total) {
+      const tbody = document.querySelector('#aoiTable tbody');
+      tbody.innerHTML = '';
+      const aoiOrder = ['题干区', '图像区', '公式区', '选项区', '反馈区', '其他区域'];
+      for (const aoi of aoiOrder) {
+        const count = stats[aoi]?.count || 0;
+        const time = (count * 0.1).toFixed(1); // 10Hz sample, approximate
+        const pct = total ? ((count / total) * 100).toFixed(1) : '0.0';
+        const tip = getAOITip(aoi, pct);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${aoi}</td><td>${count}</td><td>${time}s</td><td>${pct}%</td><td>${tip}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function getAOITip(aoi, pct) {
+      pct = Number(pct);
+      if (aoi === '图像区') {
+        if (pct < 15) return '关注偏少，可能没有充分利用图像信息';
+        if (pct > 40) return '高度关注图像，可能在进行图像信息加工';
+        return '关注比例适中';
+      }
+      if (aoi === '选项区') {
+        if (pct > 45) return '选项停留过多，可能存在猜测或反复比较';
+        return '可结合题干和图像区共同解释';
+      }
+      if (aoi === '题干区') return '用于判断是否充分阅读题意';
+      if (aoi === '公式区') return '用于判断是否依赖公式提示';
+      return '非核心学习区域';
+    }
+
+    function renderDiagnosis(stats, total, correct) {
+      const graphPct = total ? ((stats['图像区']?.count || 0) / total * 100) : 0;
+      const stemPct = total ? ((stats['题干区']?.count || 0) / total * 100) : 0;
+      const optionPct = total ? ((stats['选项区']?.count || 0) / total * 100) : 0;
+      const formulaPct = total ? ((stats['公式区']?.count || 0) / total * 100) : 0;
+
+      const lines = [];
+      if (!total) {
+        lines.push('尚未采集到学习任务阶段的数据。请先启动采集模式并完成学习任务。');
+      } else {
+        if (graphPct < 15) {
+          lines.push('图像区关注比例较低：学生可能没有充分利用速度—时间图像进行推理。');
+        } else {
+          lines.push('图像区获得了一定关注：学生可能尝试从图像中提取运动信息。');
+        }
+
+        if (optionPct > 45) {
+          lines.push('选项区停留比例较高：学生可能在选项之间反复比较，或存在猜测倾向。');
+        }
+
+        if (stemPct < 10) {
+          lines.push('题干区关注偏少：需要检查学生是否充分理解任务要求。');
+        }
+
+        if (formulaPct > 30) {
+          lines.push('公式区关注较多：学生可能依赖公式提示进行计算。');
+        }
+
+        if (correct === false && graphPct < 15) {
+          lines.push('结合答题错误和图像区低关注，可以初步推测错误原因可能与忽略关键信息有关。');
+        } else if (correct === false && graphPct >= 15) {
+          lines.push('学生虽然关注了图像，但仍然答错，可能问题在于图像含义理解或面积计算策略。');
+        } else if (correct === true) {
+          lines.push('学生答题正确，可进一步分析其视线路径是否体现出有效解题策略。');
+        }
+      }
+
+      document.getElementById('diagnosis').innerHTML = lines.map(x => `<p>${x}</p>`).join('');
+    }
+
+    function resizeHeatCanvas() {
+      const taskScreen = document.getElementById('taskScreen');
+      const canvas = document.getElementById('heatCanvas');
+      if (!taskScreen || !canvas) return;
+      const rect = taskScreen.getBoundingClientRect();
+      canvas.width = Math.floor(rect.width);
+      canvas.height = Math.floor(rect.height);
+    }
+
+    function drawHeatmap() {
+      goSection('task');
+      setTimeout(() => {
+        const canvas = document.getElementById('heatCanvas');
+        const ctx = canvas.getContext('2d');
+        const taskScreen = document.getElementById('taskScreen');
+        const rect = taskScreen.getBoundingClientRect();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const samples = state.samples.filter(s => s.section === 'task');
+        for (const s of samples) {
+          const x = s.x - rect.left;
+          const y = s.y - rect.top;
+          if (x < 0 || y < 0 || x > canvas.width || y > canvas.height) continue;
+          const grd = ctx.createRadialGradient(x, y, 0, x, y, 28);
+          grd.addColorStop(0, 'rgba(220, 38, 38, 0.20)');
+          grd.addColorStop(1, 'rgba(220, 38, 38, 0)');
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(x, y, 28, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }, 80);
+    }
+
+    function drawPhysicsGraph() {
+      const canvas = document.getElementById('physicsGraph');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const pad = 45;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#111827';
+      ctx.beginPath();
+      ctx.moveTo(pad, h - pad);
+      ctx.lineTo(w - 20, h - pad);
+      ctx.moveTo(pad, h - pad);
+      ctx.lineTo(pad, 20);
+      ctx.stroke();
+
+      ctx.fillStyle = '#111827';
+      ctx.font = '14px Microsoft YaHei, Arial';
+      ctx.fillText('t/s', w - 40, h - 18);
+      ctx.fillText('v/(m/s)', 8, 24);
+
+      function sx(t) { return pad + t / 6 * (w - pad - 45); }
+      function sy(v) { return h - pad - v / 6 * (h - pad - 40); }
+
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1;
+      for (let t = 0; t <= 6; t += 1) {
+        ctx.beginPath();
+        ctx.moveTo(sx(t), h - pad);
+        ctx.lineTo(sx(t), h - pad + 5);
+        ctx.stroke();
+        ctx.fillStyle = '#6b7280';
+        ctx.fillText(String(t), sx(t) - 4, h - pad + 22);
+      }
+      for (let v = 0; v <= 6; v += 2) {
+        ctx.beginPath();
+        ctx.moveTo(pad - 5, sy(v));
+        ctx.lineTo(pad, sy(v));
+        ctx.stroke();
+        ctx.fillStyle = '#6b7280';
+        ctx.fillText(String(v), pad - 25, sy(v) + 4);
+      }
+
+      // Filled area
+      ctx.fillStyle = 'rgba(37, 99, 235, 0.16)';
+      ctx.beginPath();
+      ctx.moveTo(sx(0), sy(0));
+      ctx.lineTo(sx(2), sy(6));
+      ctx.lineTo(sx(6), sy(6));
+      ctx.lineTo(sx(6), sy(0));
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(sx(0), sy(0));
+      ctx.lineTo(sx(2), sy(6));
+      ctx.lineTo(sx(6), sy(6));
+      ctx.stroke();
+
+      ctx.fillStyle = '#1d4ed8';
+      [[0,0], [2,6], [6,6]].forEach(([t,v]) => {
+        ctx.beginPath();
+        ctx.arc(sx(t), sy(v), 5, 0, Math.PI*2);
+        ctx.fill();
+      });
+
+      ctx.fillStyle = '#111827';
+      ctx.font = '13px Microsoft YaHei, Arial';
+      ctx.fillText('(0,0)', sx(0)+6, sy(0)-8);
+      ctx.fillText('(2,6)', sx(2)+6, sy(6)-8);
+      ctx.fillText('(6,6)', sx(6)-48, sy(6)-8);
+
+      ctx.fillStyle = '#1e40af';
+      ctx.font = '14px Microsoft YaHei, Arial';
+      ctx.fillText('面积 = 位移', sx(2.4), sy(2.4));
+    }
+
+    function downloadCSV() {
+      const rows = [
+        ['participantId','grade','timestamp','elapsedMs','section','x','y','aoi','source']
+      ];
+      state.samples.forEach(s => rows.push([
+        s.participantId, s.grade, s.timestamp, s.elapsedMs, s.section, s.x, s.y, s.aoi, s.source
+      ]));
+      const csv = rows.map(row => row.map(v => `"${String(v).replaceAll('"', '""')}"`).join(',')).join('\n');
+      downloadFile(csv, makeFilename('gaze_samples', 'csv'), 'text/csv;charset=utf-8;');
+    }
+
+    function downloadJSON() {
+      const payload = {
+        experiment: '眼动数据采集实验：物理图像题学习任务',
+        participantId: document.getElementById('participantId').value || '',
+        grade: document.getElementById('grade').value || '',
+        context: document.getElementById('modeSelect').value || '',
+        selectedAnswer: state.selectedAnswer,
+        correctAnswer: state.correctAnswer,
+        explanation: document.getElementById('explain').value || '',
+        taskStartedAt: state.taskStartedAt ? new Date(state.taskStartedAt).toISOString() : null,
+        taskEndedAt: state.taskEndedAt ? new Date(state.taskEndedAt).toISOString() : null,
+        events: state.events,
+        samples: state.samples
+      };
+      downloadFile(JSON.stringify(payload, null, 2), makeFilename('gaze_experiment', 'json'), 'application/json;charset=utf-8;');
+    }
+
+    function makeFilename(prefix, ext) {
+      const id = document.getElementById('participantId').value || 'unknown';
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      return `${prefix}_${id}_${ts}.${ext}`;
+    }
+
+    function downloadFile(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function resetExperiment() {
+      if (!confirm('确定要清空当前采集数据吗？')) return;
+      state.samples = [];
+      state.events = [];
+      state.taskStartedAt = null;
+      state.taskEndedAt = null;
+      state.selectedAnswer = null;
+      document.querySelectorAll('input[name="answer"]').forEach(x => x.checked = false);
+      document.getElementById('explain').value = '';
+      const heatCanvas = document.getElementById('heatCanvas');
+      if (heatCanvas) heatCanvas.getContext('2d').clearRect(0,0,heatCanvas.width,heatCanvas.height);
+      markEvent('清空数据');
+      updatePanel();
+      updateResults();
+    }
+
+    window.addEventListener('resize', resizeHeatCanvas);
+    window.addEventListener('load', () => {
+      positionCalibrationPoint();
+      drawPhysicsGraph();
+      resizeHeatCanvas();
+      updatePanel();
+      markEvent('打开实验页面');
+    });
+  </script>
+</body>
+</html>
